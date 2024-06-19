@@ -36,7 +36,24 @@
   (let ((c (* (- 15 (/ (min depth 30) 2)) #x11)))
     (rainbow-indent-hexcolor c c c)))
 
-(defvar rainbow-indent-color-function 'rainbow-indent-grayscale)
+(defun rainbow-indent-blackscale (depth)
+  "A discretized gradient that fades out from black."
+  (let ((c (* (/ (min depth 30) 2) #x11)))
+    (rainbow-indent-hexcolor c c c)))
+
+(defun rainbow-indent-ForestTheme (depth)
+  "A discretized gradient that fades out from the initial color (43, 51, 57)."
+  (let* ((initial-color '(43 51 57))
+         (max-depth 30)
+         (scale-factor (/ (min depth max-depth) 2))
+         (r (min 255 (+ (nth 0 initial-color) (* scale-factor #x11))))
+         (g (min 255 (+ (nth 1 initial-color) (* scale-factor #x11))))
+         (b (min 255 (+ (nth 2 initial-color) (* scale-factor #x11)))))
+    (rainbow-indent-hexcolor r g b)))
+
+
+;; (defvar rainbow-indent-color-function 'rainbow-indent-grayscale)
+(defvar rainbow-indent-color-function 'rainbow-indent-ForestTheme)
 
 (defun rainbow-indent-line ()
   (interactive)
@@ -72,6 +89,26 @@ get fancy rainbow indentation.  For example:
           (lambda (&rest args)
             (apply indent-fn args)
             (rainbow-indent-line)))))
+(defun rainbow-indent-clear-line ()
+  "Clear rainbow indentation from the current line."
+  (interactive)
+  (save-excursion
+    (beginning-of-line)
+    (when (looking-at "^ +")
+      (remove-text-properties
+       (line-beginning-position)
+       (line-end-position)
+       '(font-lock-face nil)))))
+
+(defun rainbow-indent-clear ()
+  "Clear rainbow indentation from the entire buffer."
+  (interactive)
+  (save-excursion
+    (goto-char (point-min))
+    (while (not (eobp))
+      (rainbow-indent-clear-line)
+      (forward-line))))
+(add-hook 'org-mode-hook 'rainbow-indent-hook)
 
 (provide 'rainbow-indent)
 
